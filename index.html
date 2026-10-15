@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plataforma ESI</title>
+<meta name="description" content="Plataforma de estudos de proteção e coordenograma — ESI Engenharia de Soluções Inteligentes.">
+<meta name="theme-color" content="#0F2747">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23fff'/%3E%3Crect x='5' y='6' width='22' height='5' fill='%230F2747'/%3E%3Crect x='5' y='13.5' width='19' height='5' fill='%230F2747'/%3E%3Crect x='5' y='21' width='22' height='5' fill='%231D68EE'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=146">
+<script src="js/auth-config.js?v=146"></script>
+<script>/* login ativo e sem sessão: vai direto para a tela de entrada, sem mostrar a plataforma */
+(function(){var c=window.AUTH_CONFIG;if(!c||!c.apiKey)return;var ok=false;try{ok=!!(sessionStorage.getItem("esi.sessao")||localStorage.getItem("esi.sessao"));}catch(e){}
+if(!ok)location.replace("login.html");}());</script>
+</head>
+<body data-protegida>
+
+<header class="topbar">
+  <button class="tb-burger" id="btnMenu" type="button" aria-label="Abrir menu" aria-controls="sidenav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <a class="brand" href="#" data-tab="hub" aria-label="ESI — Plataforma de Estudos de Proteção">
+    <img id="hdrLogo" alt="ESI" src="img/logo-esi-cor.png">
+    <span class="bt"><b>Plataforma ESI</b><small>Engenharia de Soluções Inteligentes</small></span>
+  </a>
+  <div class="tb-right">
+    <button class="btn-novo" id="btnNovo" type="button">Criar novo estudo</button>
+    <div class="userbox" id="userbox" hidden>
+      <button class="ub-btn" id="ubBtn" type="button" aria-haspopup="true" aria-expanded="false">
+        <span class="ub-av" id="ubAv">U</span><span class="ub-mail"></span>
+        <svg class="ub-car" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 10l5 6 5-6z"/></svg>
+      </button>
+      <div class="ub-pop" id="ubPop" hidden>
+        <button type="button" id="ubSobre">Sobre a plataforma</button>
+        <button type="button" id="ubSair">Sair</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+<aside class="sidenav" id="sidenav" aria-label="Menu principal">
+  <nav id="snNav"></nav>
+  <div class="sn-bottom">
+    <button class="sn-item" id="snSobre" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Sobre a plataforma</span></button>
+  </div>
+</aside>
+<div class="sn-backdrop" id="snBack"></div>
+
+<div class="main">
+
+<!-- ===================== INÍCIO (boas-vindas geral) ===================== -->
+<section class="view" id="tab-hub" role="tabpanel" aria-labelledby="tabbtn-hub">
+  <div class="home">
+    <div class="home-in hub">
+      <div class="hub-top">
+        <p class="hub-k">Plataforma ESI</p>
+        <h1 id="hubOla">Olá!</h1>
+        <p class="lead">Escolha uma área para começar. Cada módulo reúne as ferramentas de um tipo de estudo.</p>
+      </div>
+      <div class="hub-cards" id="hubCards"></div>
+      <div class="hub-recs" id="hubRec" hidden>
+        <h2>Continue de onde parou</h2>
+        <div id="hubRecLista"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ÁREA DE UM MÓDULO (em desenvolvimento) ===================== -->
+<section class="view" id="tab-mod" role="tabpanel" hidden>
+  <div class="home"><div class="home-in mod" id="modConteudo"></div></div>
+</section>
+
+<!-- ===================== ESTUDO DE PROTEÇÃO · BOAS-VINDAS ===================== -->
+<section class="view" id="tab-inicio" role="tabpanel" aria-labelledby="tabbtn-inicio" hidden>
+  <div class="home">
+    <div class="home-in ini">
+      <div class="ini-top">
+        <div>
+          <p class="hub-k">Estudo de proteção</p>
+          <h1>Boas-vindas</h1>
+          <p class="lead">Abra um estudo existente ou crie um novo para começar.</p>
+        </div>
+        <label class="ini-busca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="iniBusca" type="search" placeholder="Buscar por número, estudo, cliente ou concessionária" autocomplete="off"></label>
+      </div>
+
+      <div class="ini-bar"><b>Estudos</b><button type="button" class="ini-link" id="btnNovo2">+ Criar novo estudo</button>
+        <span class="ini-cont" id="iniCont">0 ESTUDOS</span>
+        <label class="ini-ord"><span class="sr">Ordenar</span><select id="iniOrd"><option value="rec">Mais recentes</option><option value="az">Ordem alfabética</option><option value="id">Número do estudo</option></select></label>
+      </div>
+
+      <div class="ini-cards" id="iniCards"></div>
+      <div class="ini-list" id="iniLista"></div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ===================== ABA: PÁGINA INICIAL ===================== -->
+<section class="view" id="tab-home" role="tabpanel" aria-labelledby="tabbtn-home" hidden>
+  <div class="home">
+    <div class="home-in wide">
+      <h1>Formulário de cadastro</h1>
+      <p class="lead">Preencha os dados do cliente, da empresa contratada, a finalidade e a concessionária para iniciar o estudo de proteção e coordenação.</p>
+
+      <div class="home-cols">
+        <div class="home-left">
+          <section class="card" aria-labelledby="h-cliente">
+            <h2 id="h-cliente">Cliente</h2>
+            <div class="grid2" id="grp-cliente"></div>
+          </section>
+          <section class="card" aria-labelledby="h-contratada">
+            <h2 id="h-contratada">Empresa contratada</h2>
+            <div class="grid2" id="grp-contratada"></div>
+          </section>
+        </div>
+
+        <section class="card home-right" aria-labelledby="h-conc">
+          <h2 id="h-fin">Finalidade do estudo</h2>
+          <div class="conc-grid fin-grid" id="finGrp" role="radiogroup" aria-labelledby="h-fin"></div>
+          <h2 id="h-conc" class="h-sep">Concessionária</h2>
+          <p class="note" style="margin:0 0 12px">Clique para escolher a concessionária do projeto.</p>
+          <div class="conc-grid" id="concGrid" role="radiogroup" aria-labelledby="h-conc"></div>
+        </section>
+      </div>
+
+      <div class="home-actions">
+        <button class="btn pri" id="btnGoCoord" type="button">Ir para dados da concessionária →</button>
+        <span class="note" id="homeStatus"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABA: DADOS DA CONCESSIONÁRIA ===================== -->
+<section class="view" id="tab-conc" role="tabpanel" aria-labelledby="tabbtn-conc" hidden>
+  <div class="home">
+    <div class="home-in wide">
+      <header class="conc-head" id="concHead">
+        <div class="conc-logo" id="concLogo" role="img" aria-label="Logo da concessionária"></div>
+        <div class="premissas" aria-labelledby="h-prem">
+          <div class="prem-row">
+          <div class="prem-col">
+          <h2 class="prem-h" id="h-prem">Premissas do estudo</h2>
+          <div class="xl">
+            <label for="basekv">Tensão de base</label>
+            <div class="box"><input id="basekv" type="text" inputmode="decimal" autocomplete="off"><span class="u">kV</span></div>
+            <label for="baseS">Potência de base</label>
+            <div class="box"><input id="baseS" type="text" inputmode="decimal" autocomplete="off"><span class="u">MVA</span></div>
+            <label for="baseA" hidden>Corrente de base</label>
+            <div class="box dim" hidden><input id="baseA" type="text" readonly tabindex="-1" placeholder="calculada"><span class="u">A</span></div>
+          </div>
+          </div>
+          <div class="prem-modo">
+          <h2 class="prem-h" id="h-modo">Dados da rede para o estudo</h2>
+          <div class="seg" id="redeModo" role="radiogroup" aria-label="Dados da rede para o estudo">
+            <button class="btn" type="button" role="radio" data-modo="imp" aria-pressed="true" aria-checked="true">Impedâncias de sequência</button>
+            <button class="btn" type="button" role="radio" data-modo="icc" aria-pressed="false" aria-checked="false">Corrente de curto direta</button>
+          </div>
+          </div>
+          <div class="prem-modo">
+          <h2 class="prem-h" id="h-inr">Método da corrente de inrush</h2>
+          <div class="dd" id="inrushDD"></div>
+          </div>
+          </div>
+        </div>
+      </header>
+      <div class="conc-cols">
+        <div class="prot cprot" id="cprot"></div>
+        <div class="prot rede" id="rede"></div>
+      </div>
+
+      <section class="grp iccdef" aria-labelledby="h-iccdef">
+        <h3 class="grp-h" id="h-iccdef">Correntes de curto-circuito do estudo</h3>
+        <div class="func">
+          <p class="note" id="iccOrigem" style="margin:0 0 12px"></p>
+          <div class="iccgrid" id="iccGrid"></div>
+        </div>
+      </section>
+
+      <div class="home-actions">
+        <button class="btn pri" id="btnGoInst" type="button">Ir para dados da instalação →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABA: DADOS DA INSTALAÇÃO ===================== -->
+<section class="view" id="tab-inst" role="tabpanel" aria-labelledby="tabbtn-inst" hidden>
+  <div class="home">
+    <div class="home-in wide">
+      <section class="grp" aria-labelledby="h-inst">
+        <h3 class="grp-h" id="h-inst">Transformadores</h3>
+        <div class="func">
+          <div class="ntr">
+            <label for="nTrafos">Quantidade de transformadores</label>
+            <div class="ntr-ctl">
+              <button type="button" class="fbtn sm" id="nTrafosMenos" aria-label="Diminuir quantidade">−</button>
+              <div class="box"><input id="nTrafos" type="text" inputmode="numeric" autocomplete="off" value="1"></div>
+              <button type="button" class="fbtn sm" id="nTrafosMais" aria-label="Aumentar quantidade">+</button>
+            </div>
+            <span class="note">As colunas marcadas como automáticas são calculadas a partir dos dados informados.</span>
+          </div>
+          <div id="instTrafos"></div>
+        </div>
+      </section>
+      <section class="grp" aria-labelledby="h-dem">
+        <h3 class="grp-h" id="h-dem">Demanda e geração</h3>
+        <div class="func" id="instDem"></div>
+      </section>
+      <section class="grp" aria-labelledby="h-tc">
+        <h3 class="grp-h" id="h-tc">Dimensionamento do TC de proteção</h3>
+        <div class="func" id="instTC"></div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABA: ORDEM DE AJUSTE DE PROTEÇÃO ===================== -->
+<section class="view" id="tab-ajuste" role="tabpanel" aria-labelledby="tabbtn-ajuste" hidden>
+  <div class="app ajgrid">
+    <!-- Metade esquerda: área de cálculo (só aparecem as funções habilitadas) -->
+    <div class="datacol" id="ajcalc">
+      <h2 class="prot-title">Cálculo</h2>
+      <div class="calc" id="calc"></div>
+    </div>
+    <!-- Metade direita: escolha das funções e ajustes -->
+    <div class="datacol ajfun" id="ajfun">
+      <h2 class="prot-title">Ordem de ajuste de proteção</h2>
+      <div class="prot" id="prot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABA: COORDENOGRAMA ===================== -->
+<section class="view" id="tab-coord" role="tabpanel" aria-labelledby="tabbtn-coord" hidden>
+  <div class="app" id="app">
+
+    <!-- Metade esquerda: gráfico -->
+    <div class="chartcol">
+      <div class="ctools">
+        <div class="seg" id="viewSeg" role="group" aria-label="Visão do gráfico">
+          <button class="btn" type="button" data-view="fase" aria-pressed="true">Fase</button>
+          <button class="btn" type="button" data-view="neutro" aria-pressed="false">Neutro</button>
+        </div>
+        <button class="btn" id="btnUndo" type="button" title="Desfazer (Ctrl+Z)">↶ Desfazer</button>
+        <button class="btn" id="btnRedo" type="button" title="Refazer (Ctrl+Y)">↷ Refazer</button>
+        <button class="btn" id="btnReset" type="button" title="Duplo clique no gráfico também restaura">Restaurar eixos</button>
+        <button class="btn" id="btnPng" type="button">Exportar PNG</button>
+        <details class="more" id="more">
+          <summary class="btn">Mais opções</summary>
+          <div class="pop">
+            <label class="fld"><span>Nome do projeto</span><input id="pname" type="text" autocomplete="off"></label>
+            <div class="grid2">
+              <label class="fld chk" for="legend"><input id="legend" type="checkbox"><span>Legenda no gráfico</span></label>
+              <label class="fld chk full" for="showall"><input id="showall" type="checkbox"><span>Mostrar também as curvas individuais (tracejado fino)</span></label>
+            </div>
+            <div class="grid2">
+              <label class="fld"><span>I mín (A)</span><input id="imin" type="number" step="any"></label>
+              <label class="fld"><span>I máx (A)</span><input id="imax" type="number" step="any"></label>
+              <label class="fld"><span>t mín (s)</span><input id="tmin" type="number" step="any"></label>
+              <label class="fld"><span>t máx (s)</span><input id="tmax" type="number" step="any"></label>
+            </div>
+            <textarea id="json" spellcheck="false" placeholder="O projeto em JSON aparece aqui. Cole um JSON e use Carregar."></textarea>
+            <div class="row">
+              <button class="btn sm" id="btnCopy" type="button">Copiar JSON</button>
+              <button class="btn sm" id="btnLoad" type="button">Carregar JSON</button>
+              <button class="btn sm" id="btnFile" type="button">Abrir arquivo…</button>
+              <button class="btn sm" id="btnSaveFile" type="button">Baixar .json</button>
+              <button class="btn sm" id="btnSvg" type="button">Exportar SVG</button>
+              <input id="fileIn" type="file" accept=".json,application/json" hidden>
+            </div>
+            <div class="row">
+              <button class="btn sm" id="btnSample" type="button">Restaurar valores de exemplo</button>
+              <button class="btn sm ghost" id="btnClear" type="button">Zerar funções</button>
+            </div>
+          </div>
+        </details>
+        <span id="status" role="status"></span>
+      </div>
+      <h2 class="ctitle" id="ctitle">Coordenograma de fase</h2>
+      <div class="chartwrap" id="wrap">
+        <svg id="chart" role="img" aria-label="Coordenograma tempo × corrente"></svg>
+        <div id="tip"></div>
+      </div>
+      <div class="cfilter" id="cfilter" hidden></div>
+      <p class="hint">Roda do mouse: zoom · arrastar: mover · duplo clique: restaurar · passe o mouse para ler o tempo de cada curva</p>
+    </div>
+
+    <!-- Metade direita: resumo das funções do cliente (os ajustes ficam na aba Ordem de ajuste de proteção) -->
+    <aside class="datacol" aria-label="Relatório do projeto">
+      <div class="prot" id="resumo"></div>
+    </aside>
+
+  </div>
+</section>
+
+<!-- ===================== RODAPÉ ===================== -->
+<footer class="sitefoot">
+  <div class="sf-in">
+    <div class="sf-brand">
+      <img id="ftLogo" alt="ESI — Engenharia de Soluções Inteligentes" src="img/logo-esi-branco.png">
+      <span>Plataforma de estudos e projetos elétricos.</span>
+    </div>
+    <nav class="sf-nav" aria-label="Atalhos">
+      <a href="#" data-tab="hub">Início</a>
+      <a href="#" data-tab="inicio" data-mod>Estudo de proteção</a>
+      <a href="#" data-tab="mod:bt" data-mod>Baixa tensão</a>
+      <a href="#" data-tab="mod:mt" data-mod>Média tensão</a>
+      <a href="#" data-tab="mod:tarifa" data-mod>Análise tarifária</a>
+      <a href="#" data-tab="mod:spda" data-mod>SPDA</a>
+      <button type="button" id="btnSobre">Sobre</button>
+    </nav>
+    <div class="sf-copy">© <span id="ftAno">2026</span> ESI — Engenharia de Soluções Inteligentes<br>Os dados ficam salvos somente neste navegador.</div>
+  </div>
+</footer>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<dialog class="sobre" id="dlgSobre" aria-labelledby="sobreH">
+  <div class="sobre-in">
+    <img id="sbLogo" alt="ESI" src="img/logo-esi-cor.png">
+    <h2 id="sobreH">Plataforma ESI</h2>
+    <p>Plataforma da ESI com módulos para estudos e projetos elétricos. Hoje está disponível o módulo de Estudo de proteção; Baixa tensão, Média tensão, Análise tarifária e SPDA estão em desenvolvimento.</p>
+    <ul>
+      <li>Cadastro do cliente, da concessionária e da instalação (transformadores, demanda, geração e TCs).</li>
+      <li>Ordem de ajuste das funções de proteção, com os cálculos e a representação da função 67.</li>
+      <li>Coordenograma tempo × corrente interativo de fase e neutro.</li>
+      <li>Relatório do projeto com capa, resumos, ordem de ajuste e gráficos em alta resolução.</li>
+    </ul>
+    <p class="note">Os valores calculados são apoio ao estudo e devem ser conferidos pelo engenheiro responsável.</p>
+    <div class="row"><button class="btn pri" id="btnSobreOk" type="button">Fechar</button></div>
+  </div>
+</dialog>
+
+<!-- Scripts clássicos (sem módulos) para funcionar abrindo o arquivo direto no navegador. A ordem importa. -->
+<script src="js/logo.js?v=146"></script>
+<script src="js/auth.js?v=146"></script>
+<script src="js/util.js?v=146"></script>
+<script src="js/curves.js?v=146"></script>
+<script src="js/funcoes.js?v=146"></script>
+<script src="js/state.js?v=146"></script>
+<script src="js/projetos.js?v=146"></script>
+<script src="js/modulos.js?v=146"></script>
+<script src="js/chart.js?v=146"></script>
+<script src="js/ui.js?v=146"></script>
+<script src="js/protecao.js?v=146"></script>
+<script src="js/inrush.js?v=146"></script>
+<script src="js/rede.js?v=146"></script>
+<script src="js/home.js?v=146"></script>
+<script src="js/instalacao.js?v=146"></script>
+<script src="js/tc.js?v=146"></script>
+<script src="js/recom.js?v=146"></script>
+<script src="js/direcional.js?v=146"></script>
+<script src="js/resumo.js?v=146"></script>
+<script src="js/relatorio.js?v=146"></script>
+<script src="js/app.js?v=146"></script>
+</body>
+</html>

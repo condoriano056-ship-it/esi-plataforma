@@ -1,0 +1,90 @@
+/* login.css — página de entrada. Paleta do site (azul-marinho + azul vivo da logo ESI). */
+:root{--navy:#0F2747;--navy-2:#1C3D75;--blue:#1D68EE;--blue-2:#1555C8;--p1:#9DBBF2;--p2:#BFD3F7;--p3:#D7E3FA;--p4:#EAF1FD;--ink:#0B1730;--muted:#44536D;--bad:#B3261E;--ok:#1E7B45;--sans:Arial,"Helvetica Neue",Helvetica,sans-serif;--r:30px;color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%}
+body.lg{margin:0;font:15px/1.5 var(--sans);color:var(--ink);background:linear-gradient(135deg,#C6D8F9 0%,#9DBBF2 100%);background-attachment:fixed;-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.lg-wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:40px 28px}
+.lg-card{width:100%;max-width:1120px;height:min(680px,calc(100vh - 80px));min-height:600px;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);align-items:stretch}
+
+/* ---- painel esquerdo: gradiente + slides ---- */
+.lg-show{order:-1;position:relative;overflow:hidden;border-radius:var(--r);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:48px 110px 96px clamp(32px,5vw,64px);
+  background:linear-gradient(165deg,#1D68EE 0%,#1C4FB8 42%,#0F2747 100%);box-shadow:0 24px 60px rgba(15,39,71,.28)}
+.lg-deco i{position:absolute;display:block;background:rgba(255,255,255,.12);border-radius:34px}
+.lg-deco .d1{left:0;top:0;width:34%;height:42%;border-radius:0 0 34px 0;background:rgba(255,255,255,.10)}
+.lg-deco .d2{left:0;top:23%;width:22%;height:25%;border-radius:0 34px 34px 0;background:rgba(255,255,255,.12)}
+.lg-deco .d3{right:12%;bottom:12%;width:30%;height:34%;background:rgba(255,255,255,.10)}
+.lg-deco .d4{left:34%;bottom:0;width:30%;height:26%;border-radius:34px 34px 0 0;background:rgba(255,255,255,.12)}
+.lg-bgs,.lg-bg{position:absolute;inset:0}
+.lg-bg{background-size:cover;background-position:center;opacity:0;transform:scale(1.04);transition:opacity 1.4s ease;mix-blend-mode:luminosity}
+.lg-bg.on{opacity:.12;animation:lgzoom 14s ease-out forwards}
+@keyframes lgzoom{from{transform:scale(1.04)}to{transform:scale(1.14)}}
+.lg-slides{position:relative;z-index:1;display:grid;max-width:520px}
+.lg-slide{grid-area:1/1;opacity:0;transform:translateY(22px);visibility:hidden;transition:opacity .8s ease,transform .8s ease,visibility 0s .8s}
+.lg-slide.on{opacity:1;transform:none;visibility:visible;transition:opacity .9s ease .35s,transform .9s ease .35s,visibility 0s}
+.lg-slide.sai{opacity:0;transform:translateY(-18px)}
+.lg-k{margin:0 0 14px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#BFD3F7;font-weight:700;display:flex;align-items:center;gap:12px}
+.lg-k::before{content:"";width:34px;height:3px;border-radius:2px;background:#fff;display:block}
+.lg-slide h2{margin:0 0 16px;font-size:clamp(26px,2.9vw,38px);line-height:1.15;font-weight:700;text-wrap:balance}
+.lg-slide p:not(.lg-k){margin:0;font-size:clamp(14.5px,1.2vw,17px);color:#DCE7FB;max-width:48ch}
+.lg-dots{position:absolute;z-index:1;left:clamp(32px,5vw,64px);bottom:40px;display:flex;gap:10px}
+.lg-dot{position:relative;width:44px;height:4px;border:0;padding:0;border-radius:2px;background:rgba(255,255,255,.28);cursor:pointer;overflow:hidden}
+.lg-dot::after{content:"";position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left}
+.lg-dot.on::after{animation:lgbar var(--dur,6s) linear forwards}
+.lg-show.pausa .lg-dot.on::after{animation-play-state:paused}
+@keyframes lgbar{to{transform:scaleX(1)}}
+.lg-dot:focus-visible{outline-color:#fff}
+
+/* ---- cartão do formulário, sobreposto ao painel, com camadas ao fundo ---- */
+.lg-form{position:relative;z-index:2;margin-left:-84px;padding-top:56px;display:flex}
+.lg-form::before,.lg-form::after{content:"";position:absolute;left:0;right:0;border-radius:var(--r);z-index:-1}
+.lg-form::before{top:0;bottom:40px;background:rgba(255,255,255,.45)}
+.lg-form::after{top:28px;bottom:20px;background:rgba(255,255,255,.75)}
+.lg-box{flex:1;background:#fff;border-radius:var(--r);box-shadow:0 24px 60px rgba(15,39,71,.22);padding:34px clamp(28px,4vw,52px) 26px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.lg-logo{width:min(190px,60%);height:auto;margin:0 auto 20px;display:block}
+.lg-box h1{margin:0 0 4px;font-size:28px;line-height:1.2;color:var(--navy);text-align:center}
+.lg-sub{margin:0 0 20px;color:var(--muted);text-align:center;font-size:14px}
+.lg-aviso{margin:0 0 14px;padding:10px 14px;border:1px solid #E0A526;background:#FFF6E0;color:#6B4700;border-radius:14px;font-size:12.5px}
+.lg-aviso a{color:var(--blue-2);font-weight:700}
+.lg-f{display:flex;flex-direction:column;margin-bottom:12px}
+.lg-f>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}     /* rótulo só para leitores de tela */
+.lg-f input{width:100%;padding:13px 20px;border:2px solid transparent;border-radius:999px;background:#EEF2F8;font-size:14px;transition:border-color .15s,box-shadow .15s,background .15s}
+.lg-f input::placeholder{color:#7A869B}
+.lg-f input:focus{outline:0;background:#fff;border-color:var(--blue);box-shadow:0 0 0 4px rgba(29,104,238,.14)}
+.lg-pw{position:relative}
+.lg-pw input{padding-right:52px}
+.lg-pw button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:0;background:none;color:var(--muted);cursor:pointer;border-radius:50%;display:grid;place-items:center}
+.lg-pw button:hover{color:var(--blue);background:var(--p4)}
+.lg-pw svg{width:19px;height:19px}
+.lg-row{display:flex;justify-content:space-between;align-items:center;gap:8px 12px;flex-wrap:wrap;margin:4px 6px 6px;font-size:12.5px}
+.lg-chk{display:flex;align-items:center;gap:7px;color:var(--muted);cursor:pointer}
+.lg-chk input{accent-color:var(--blue);width:16px;height:16px;margin:0}
+.lg-link{background:none;border:0;padding:0;color:var(--blue);cursor:pointer;font-weight:700;font-size:12.5px}
+.lg-link:hover{color:var(--blue-2);text-decoration:underline}
+.lg-msg{min-height:20px;margin:4px 6px 8px;font-size:12.5px;color:var(--bad);text-align:center}
+.lg-msg.ok{color:var(--ok)}
+.lg-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 22px;border:0;border-radius:999px;background:linear-gradient(90deg,var(--navy) 0%,var(--blue) 100%);background-size:140% 100%;background-position:0 0;color:#fff;font-weight:700;font-size:13px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:background-position .35s,box-shadow .2s,transform .05s;box-shadow:0 8px 20px rgba(29,104,238,.28)}
+.lg-btn svg{width:18px;height:18px;margin-left:auto;position:absolute;right:0;display:none}
+.lg-btn:hover:not(:disabled){background-position:100% 0;box-shadow:0 10px 24px rgba(29,104,238,.38)}
+.lg-btn:active:not(:disabled){transform:translateY(1px)}
+.lg-btn:disabled{opacity:.55;cursor:default;box-shadow:none}
+.lg-btn svg{display:block;position:static;margin-left:0}
+.lg-btn.carregando span::after{content:"";display:inline-block;width:13px;height:13px;margin-left:12px;vertical-align:-2px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:lgspin .7s linear infinite}
+@keyframes lgspin{to{transform:rotate(360deg)}}
+.lg-rodape{margin:22px 0 0;font-size:11px;color:var(--muted);line-height:1.5;text-align:center}
+
+@media (max-width:900px){
+  .lg-wrap{padding:20px 16px}
+  .lg-card{display:block;height:auto;min-height:0}
+  .lg-show{display:none}
+  .lg-form{margin:0;padding-top:46px}
+  .lg-box{padding:28px 22px 22px}
+}
+@media (prefers-reduced-motion:reduce){
+  .lg-bg.on{animation:none}
+  .lg-slide,.lg-slide.on{transition:opacity .2s}
+  .lg-dot.on::after{animation:none;transform:scaleX(1)}
+  .lg-btn{transition:none}
+}

@@ -1,0 +1,18 @@
+IMAGENS DA PLATAFORMA
+Coloque aqui os arquivos com EXATAMENTE estes nomes (minusculas, sem acento).
+Formatos aceitos: .png, .svg, .jpg, .jpeg ou .webp (a extensao pode ser qualquer uma dessas).
+Depois de colocar, aperte Ctrl+F5 no navegador.
+
+Concessionarias (Pagina inicial e aba Dados da Concessionaria):
+  logo-enel.png
+  logo-cpfl.png
+  logo-energisa.png
+  logo-neoenergia.png
+
+Finalidade do estudo (Pagina inicial):
+  finalidade-consumo.png
+  finalidade-consumo_geracao.png
+  finalidade-geracao.png
+
+Sem o arquivo, aparece o icone padrao.
+Dica: fundo transparente (png/svg), proporcao horizontal (16:10 ou 16:9), uns 600 x 375 px.

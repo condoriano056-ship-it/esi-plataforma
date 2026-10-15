@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar · Plataforma de Estudos de Proteção</title>
+<meta name="theme-color" content="#0F2747">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23fff'/%3E%3Crect x='5' y='6' width='22' height='5' fill='%230F2747'/%3E%3Crect x='5' y='13.5' width='19' height='5' fill='%230F2747'/%3E%3Crect x='5' y='21' width='22' height='5' fill='%231D68EE'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/login.css?v=2">
+</head>
+<body class="lg">
+
+<main class="lg-wrap"><div class="lg-card">
+
+  <!-- Lado esquerdo: logo e formulário -->
+  <section class="lg-form" aria-labelledby="lgH">
+    <div class="lg-box">
+      <img class="lg-logo" id="lgLogo" src="img/logo-esi-cor.png" alt="ESI — Engenharia de Soluções Inteligentes">
+
+      <h1 id="lgH">Entrar</h1>
+      <p class="lg-sub">Entre para acessar os estudos de proteção.</p>
+
+      <p class="lg-aviso" id="lgAviso" hidden></p>
+
+      <form id="lgForm" novalidate>
+        <label class="lg-f"><span>E-mail</span>
+          <input id="lgEmail" type="email" autocomplete="username" inputmode="email" placeholder="voce@empresa.com.br" required>
+        </label>
+        <label class="lg-f"><span>Senha</span>
+          <div class="lg-pw">
+            <input id="lgSenha" type="password" autocomplete="current-password" placeholder="Sua senha" required>
+            <button type="button" id="lgOlho" aria-label="Mostrar senha" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </label>
+        <div class="lg-row">
+          <label class="lg-chk"><input id="lgLembrar" type="checkbox" checked> Manter conectado</label>
+          <button type="button" class="lg-link" id="lgEsqueci">Esqueci minha senha</button>
+        </div>
+        <p class="lg-msg" id="lgMsg" role="alert" aria-live="polite"></p>
+        <button class="lg-btn" id="lgEntrar" type="submit"><span>Continuar</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </form>
+
+      <p class="lg-rodape">© <span id="lgAno">2026</span> ESI — Engenharia de Soluções Inteligentes<br>Acesso restrito a usuários autorizados.</p>
+    </div>
+  </section>
+
+  <!-- Lado direito: slides animados sobre fundo com imagens da plataforma -->
+  <aside class="lg-show" aria-label="Apresentação da plataforma">
+    <div class="lg-deco" aria-hidden="true"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4"></i></div>
+    <div class="lg-bgs" aria-hidden="true">
+      <div class="lg-bg on" style="background-image:url(img/login-1.jpg)"></div>
+      <div class="lg-bg" style="background-image:url(img/login-2.jpg)"></div>
+      <div class="lg-bg" style="background-image:url(img/login-3.jpg)"></div>
+      <div class="lg-bg" style="background-image:url(img/login-4.jpg)"></div>
+    </div>
+    <div class="lg-veil" aria-hidden="true"></div>
+
+    <div class="lg-slides" id="lgSlides" aria-live="off">
+      <article class="lg-slide on">
+        <p class="lg-k">Coordenograma</p>
+        <h2>Curvas tempo × corrente, do jeito que o estudo pede</h2>
+        <p>Fase e neutro em escala log-log, com zoom, legenda configurável e exportação em alta resolução.</p>
+      </article>
+      <article class="lg-slide">
+        <p class="lg-k">Ordem de ajuste</p>
+        <h2>Cada ajuste com o cálculo à vista</h2>
+        <p>Funções 50, 51, 67, 27, 59, 81 e outras, com fórmulas, multiplicadores e a representação gráfica da função 67.</p>
+      </article>
+      <article class="lg-slide">
+        <p class="lg-k">Dados da instalação</p>
+        <h2>Transformadores, demanda, geração e TC num só lugar</h2>
+        <p>Correntes nominais, inrush e ANSI calculados na hora, com verificação visual da saturação do TC.</p>
+      </article>
+      <article class="lg-slide">
+        <p class="lg-k">Relatório do projeto</p>
+        <h2>Do estudo ao documento final</h2>
+        <p>Capa, resumo da concessionária e da instalação, ordem de ajuste e os coordenogramas prontos para entregar.</p>
+      </article>
+    </div>
+
+    <div class="lg-dots" id="lgDots" role="tablist" aria-label="Escolher slide"></div>
+  </aside>
+
+</div></main>
+
+<script src="js/logo.js?v=1"></script>
+<script src="js/auth-config.js?v=1"></script>
+<script src="js/auth.js?v=1"></script>
+<script src="js/login.js?v=1"></script>
+</body>
+</html>
