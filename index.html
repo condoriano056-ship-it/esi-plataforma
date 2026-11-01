@@ -7,8 +7,8 @@
 <meta name="description" content="Plataforma de estudos de proteção e coordenograma — ESI Engenharia de Soluções Inteligentes.">
 <meta name="theme-color" content="#0F2747">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23fff'/%3E%3Crect x='5' y='6' width='22' height='5' fill='%230F2747'/%3E%3Crect x='5' y='13.5' width='19' height='5' fill='%230F2747'/%3E%3Crect x='5' y='21' width='22' height='5' fill='%231D68EE'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=146">
-<script src="js/auth-config.js?v=146"></script>
+<link rel="stylesheet" href="css/style.css?v=160">
+<script src="js/auth-config.js?v=160"></script>
 <script>/* login ativo e sem sessão: vai direto para a tela de entrada, sem mostrar a plataforma */
 (function(){var c=window.AUTH_CONFIG;if(!c||!c.apiKey)return;var ok=false;try{ok=!!(sessionStorage.getItem("esi.sessao")||localStorage.getItem("esi.sessao"));}catch(e){}
 if(!ok)location.replace("login.html");}());</script>
@@ -73,23 +73,24 @@ if(!ok)location.replace("login.html");}());</script>
 <!-- ===================== ESTUDO DE PROTEÇÃO · BOAS-VINDAS ===================== -->
 <section class="view" id="tab-inicio" role="tabpanel" aria-labelledby="tabbtn-inicio" hidden>
   <div class="home">
-    <div class="home-in ini">
-      <div class="ini-top">
-        <div>
-          <p class="hub-k">Estudo de proteção</p>
-          <h1>Boas-vindas</h1>
-          <p class="lead">Abra um estudo existente ou crie um novo para começar.</p>
+    <div class="home-in dsh">
+      <div class="mod-cab"><span class="hc-ic grande" id="iniIc"></span>
+        <div><h1>Estudo de proteção</h1><p class="lead">Coordenograma, ordem de ajuste dos relés e relatório. Abra um estudo existente ou crie um novo.</p></div>
+      </div>
+
+      <div class="dsh-cards" id="iniCards"></div>
+
+      <section class="dsh-box">
+        <header class="dsh-bh">
+          <h2>Estudos <span class="ini-cont" id="iniCont">0 estudos</span></h2>
+          <div class="dsh-filtros" id="iniFiltros" role="group" aria-label="Filtrar estudos"></div>
+        </header>
+        <div class="dsh-tools">
+          <label class="ini-busca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="iniBusca" type="search" placeholder="Buscar por número, estudo, cliente ou concessionária" autocomplete="off"></label>
+          <label class="ini-ord"><span class="sr">Ordenar</span><select id="iniOrd"><option value="rec">Mais recentes</option><option value="az">Ordem alfabética</option><option value="id">Número do estudo</option></select></label>
         </div>
-        <label class="ini-busca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="iniBusca" type="search" placeholder="Buscar por número, estudo, cliente ou concessionária" autocomplete="off"></label>
-      </div>
-
-      <div class="ini-bar"><b>Estudos</b><button type="button" class="ini-link" id="btnNovo2">+ Criar novo estudo</button>
-        <span class="ini-cont" id="iniCont">0 ESTUDOS</span>
-        <label class="ini-ord"><span class="sr">Ordenar</span><select id="iniOrd"><option value="rec">Mais recentes</option><option value="az">Ordem alfabética</option><option value="id">Número do estudo</option></select></label>
-      </div>
-
-      <div class="ini-cards" id="iniCards"></div>
-      <div class="ini-list" id="iniLista"></div>
+        <div class="dsh-lista" id="iniLista"></div>
+      </section>
     </div>
   </div>
 </section>
@@ -335,26 +336,26 @@ if(!ok)location.replace("login.html");}());</script>
 </dialog>
 
 <!-- Scripts clássicos (sem módulos) para funcionar abrindo o arquivo direto no navegador. A ordem importa. -->
-<script src="js/logo.js?v=146"></script>
-<script src="js/auth.js?v=146"></script>
-<script src="js/util.js?v=146"></script>
-<script src="js/curves.js?v=146"></script>
-<script src="js/funcoes.js?v=146"></script>
-<script src="js/state.js?v=146"></script>
-<script src="js/projetos.js?v=146"></script>
-<script src="js/modulos.js?v=146"></script>
-<script src="js/chart.js?v=146"></script>
-<script src="js/ui.js?v=146"></script>
-<script src="js/protecao.js?v=146"></script>
-<script src="js/inrush.js?v=146"></script>
-<script src="js/rede.js?v=146"></script>
-<script src="js/home.js?v=146"></script>
-<script src="js/instalacao.js?v=146"></script>
-<script src="js/tc.js?v=146"></script>
-<script src="js/recom.js?v=146"></script>
-<script src="js/direcional.js?v=146"></script>
-<script src="js/resumo.js?v=146"></script>
-<script src="js/relatorio.js?v=146"></script>
-<script src="js/app.js?v=146"></script>
+<script src="js/logo.js?v=160"></script>
+<script src="js/auth.js?v=160"></script>
+<script src="js/util.js?v=160"></script>
+<script src="js/curves.js?v=160"></script>
+<script src="js/funcoes.js?v=160"></script>
+<script src="js/state.js?v=160"></script>
+<script src="js/projetos.js?v=160"></script>
+<script src="js/modulos.js?v=160"></script>
+<script src="js/chart.js?v=160"></script>
+<script src="js/ui.js?v=160"></script>
+<script src="js/protecao.js?v=160"></script>
+<script src="js/inrush.js?v=160"></script>
+<script src="js/rede.js?v=160"></script>
+<script src="js/home.js?v=160"></script>
+<script src="js/instalacao.js?v=160"></script>
+<script src="js/tc.js?v=160"></script>
+<script src="js/recom.js?v=160"></script>
+<script src="js/direcional.js?v=160"></script>
+<script src="js/resumo.js?v=160"></script>
+<script src="js/relatorio.js?v=160"></script>
+<script src="js/app.js?v=160"></script>
 </body>
 </html>

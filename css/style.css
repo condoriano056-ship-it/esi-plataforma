@@ -549,7 +549,7 @@ body{display:block;min-height:100%}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:18px}
 .btn-novo{border:0;background:var(--blue);color:#fff;font-weight:700;font-size:15px;padding:12px 24px;border-radius:8px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 12px rgba(29,104,238,.25);transition:background .15s}
 .btn-novo:hover{background:var(--blue-2)}
-.tb-burger{display:none;place-items:center;width:40px;height:40px;border:0;background:none;border-radius:8px;cursor:pointer;color:var(--anchor)}
+.tb-burger{display:grid;place-items:center;width:40px;height:40px;border:0;background:none;border-radius:8px;cursor:pointer;color:var(--anchor)}
 .tb-burger svg{width:24px;height:24px}
 .userbox{position:relative}
 .ub-btn{display:flex;align-items:center;gap:10px;background:none;border:0;cursor:pointer;padding:6px 8px;border-radius:8px;max-width:280px;font-size:13.5px}
@@ -707,3 +707,110 @@ body[data-area="hub"] .sf-nav a[data-mod]{display:inline}
 .home-in.mod.emb .mod-cab .btn{margin-left:auto}
 .mod-frame{width:100%;height:calc(100vh - 190px);min-height:620px;border:1px solid var(--line);border-radius:14px;background:#fff;display:block}
 a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--anchor)}
+
+/* Verificação visual do TC: impedância total secundária em cima (3 cartões lado a lado) e a figura grande embaixo */
+.tcdg{display:flex;flex-direction:column;align-items:stretch;gap:18px}
+.tcdg .tcpas{width:100%;max-width:1040px;margin:0 auto}
+.tcdg .tcpas ol{flex-direction:row;gap:14px;align-items:stretch}
+.tcdg .tcpas li{flex:1 1 0;min-width:0}
+.tcdg .tcsvg{width:100%;max-width:1040px;margin:0 auto}
+.tcsvg .dg-ta{font-size:17px;font-weight:700;fill:var(--anchor)}
+.tcsvg .dg-tg{font-size:23px}
+@media (max-width:900px){.tcdg .tcpas ol{flex-direction:column}}
+/* TC: dados em cima (em colunas) e verificação visual com a largura toda embaixo */
+.tcgrid{grid-template-columns:1fr}
+.tcin{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px 18px;align-items:start}
+.tcin>h4,.tcin>.note,.tcin>p,.tcin>div:not(.fld){grid-column:1/-1}
+.tcdg .tcpas,.tcdg .tcsvg{max-width:1100px}
+.tcin{align-items:end}
+.tcdg .tcpas li b{font-size:15px}
+.tcdg .tcpas li span{font-size:13px}
+.tcdg .tcpas li em{font-size:19px}
+.tcdg .tcpas h5{font-size:13px}
+
+/* menu lateral recolhível no computador */
+.tb-burger:hover{background:var(--p4)}
+@media (min-width:901px){
+  /* animação: a barra desliza para a esquerda e o conteúdo se expande suavemente */
+  .sidenav{box-sizing:border-box;overflow-x:hidden;transition:width .3s cubic-bezier(.4,0,.2,1),padding .3s cubic-bezier(.4,0,.2,1),border-width .3s,opacity .22s ease,visibility 0s}
+  .sidenav>*{min-width:250px;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .22s ease}
+  body.sn-hide .sidenav{width:0;padding-left:0;padding-right:0;border-right-width:0;opacity:0;visibility:hidden;transition:width .3s cubic-bezier(.4,0,.2,1),padding .3s cubic-bezier(.4,0,.2,1),border-width .3s,opacity .22s ease,visibility 0s .3s}
+  body.sn-hide .sidenav>*{transform:translateX(-24px);opacity:0}
+}
+.tb-burger svg{transition:transform .3s cubic-bezier(.4,0,.2,1)}
+body.sn-hide .tb-burger svg{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){ .sidenav,.sidenav>*,.tb-burger svg{transition:none!important} }
+
+
+/* ---- Boas-vindas do Estudo de proteção: mesmo estilo do painel do SPDA ---- */
+.home-in.dsh{max-width:1200px;gap:22px;padding-top:24px}
+.dsh-cards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 250px;gap:18px}
+.dsh-card{display:flex;flex-direction:column;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(15,39,71,.06)}
+.dsh-ch{display:flex;align-items:flex-start;gap:14px}
+.dsh-ic{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:var(--p4);color:var(--blue)}
+.dsh-ic svg{width:22px;height:22px}
+.dsh-ic.ok{background:#DDF3E7;color:#14532D}
+.dsh-k{margin:2px 0 3px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
+.dsh-ch h3{margin:0;font-size:17px;color:var(--navy);overflow-wrap:anywhere}
+.dsh-d{flex:1;margin:0;font-size:13.5px;line-height:1.45;color:var(--muted)}
+.dsh-cf{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:38px}
+.dsh-cf small{color:var(--muted);font-size:12.5px}
+.dsh-bt{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-weight:600;font-size:14px;cursor:pointer}
+.dsh-bt svg{width:16px;height:16px}
+.dsh-bt:hover{background:var(--blue-2)}
+.dsh-bt.sec{background:#fff;color:var(--navy);border:1px solid var(--p1)}
+.dsh-bt.sec:hover{background:var(--p4)}
+.dsh-stat{justify-content:center;gap:18px}
+.dsh-sl{display:flex;align-items:center;gap:14px}
+.dsh-sl small{display:block;color:var(--muted);font-size:13px}
+.dsh-sl b{font-size:26px;line-height:1.1;color:var(--navy)}
+.dsh-box{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(15,39,71,.06);overflow:hidden}
+.dsh-bh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;border-bottom:1px solid var(--p3)}
+.dsh-bh h2{margin:0;font-size:16px;color:var(--navy)}
+.dsh-bh .ini-cont{margin-left:8px;font-weight:400;font-size:12.5px;text-transform:none;letter-spacing:0}
+.dsh-filtros{display:flex;flex-wrap:wrap;gap:4px}
+.dsh-filtros button{border:0;background:none;padding:6px 13px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:14px}
+.dsh-filtros button:hover{background:var(--p4)}
+.dsh-filtros button.on{background:var(--blue);color:#fff}
+.dsh-tools{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 22px 4px}
+.dsh-tools .ini-busca{flex:1;min-width:min(320px,100%);height:42px;box-shadow:none}
+.dsh-lista{padding:6px 22px 14px}
+.dsh-tw{overflow-x:auto}
+.dsh-tb{width:100%;border-collapse:collapse;font-size:13.5px}
+.dsh-tb th{text-align:left;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 8px;border-bottom:1px solid var(--p3);white-space:nowrap}
+.dsh-tb td{padding:12px 8px;border-bottom:1px solid var(--p4);vertical-align:middle;color:var(--muted)}
+.dsh-tb tr:last-child td{border-bottom:0}
+.dsh-tb .r{text-align:right}
+.dsh-tb td.ac{white-space:nowrap}
+.dsh-tb td.ac .ini-link{margin-left:14px;font-size:13px}
+.dsh-nome{border:0;background:none;padding:0;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--blue-2);text-align:left}
+.dsh-nome:hover{text-decoration:underline}
+.dsh-ag{font-style:normal;font-size:11.5px;color:var(--blue-2);margin-left:6px}
+.dsh-sub{font-size:12px;color:#6B7891;margin-top:2px}
+.dsh-st{display:inline-block;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.dsh-st.ok{background:#DDF3E7;color:#14532D}
+.dsh-st.run{background:var(--p3);color:var(--navy)}
+@media (max-width:1000px){.dsh-cards{grid-template-columns:1fr 1fr}.dsh-stat{grid-column:1/-1;flex-direction:row;justify-content:space-around}}
+@media (max-width:640px){.dsh-cards{grid-template-columns:1fr}.dsh-bh,.dsh-tools,.dsh-lista{padding-left:14px;padding-right:14px}}
+/* escolha da base de cálculo dos multiplicadores */
+.cq-base{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.cq-base select{width:auto;max-width:100%;min-width:230px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;color:var(--ink)}
+
+/* Ordem de ajuste: cálculo de um lado e ajuste do outro (duas colunas) */
+@media (min-width:1240px){
+  .app.ajgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;justify-items:stretch;gap:28px;max-width:1600px;margin:0 auto}
+  .ajgrid #ajcalc{order:1;max-width:none}
+  .ajgrid #ajfun{order:2;max-width:none}
+  .ajgrid #ajcalc,.ajgrid #ajfun{min-width:0}
+  /* a escolha das funções ocupa toda a faixa de cima (os dois lados); abaixo, cálculo à esquerda e ajustes à direita */
+  .ajgrid #ajfun,.ajgrid #prot{display:contents}
+  .ajgrid #prot > section:first-child{grid-column:1 / -1;grid-row:1}
+  .ajgrid #ajcalc{grid-column:1;grid-row:2 / span 2}
+  .app.ajgrid{row-gap:0}
+  .ajgrid #prot > section:first-child{margin-bottom:28px}
+  .ajgrid #ajfun > .prot-title{grid-column:2;grid-row:2;align-self:start;margin:0 0 16px}
+  .ajgrid #prot > section:nth-child(2){grid-column:2;grid-row:3;align-self:start}
+  .ajgrid #ajcalc > .prot-title{margin:0 0 16px}
+  /* o cálculo acompanha a rolagem enquanto você mexe nos ajustes */
+  .ajgrid #ajcalc{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto;padding-right:6px}
+}

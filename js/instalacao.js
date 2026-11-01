@@ -71,7 +71,8 @@ function trafoCalc(t){
 }
 /* Corrente de inrush total da instalação (método escolhido na aba Dados da Concessionária), referida à tensão base do gráfico.
    Corrente de cada trafo: primária (kVA/(√3·kV)), convertida pela relação v1/baseKV. "Maior" = trafo de maior kVA.
-   I_ccMáx = corrente trifásica do estudo (aba Dados da Concessionária). */
+   I_ccMáx = corrente de curto trifásica ASSIMÉTRICA do estudo (aba Dados da Concessionária), como a CPFL utiliza;
+   se a assimétrica não estiver disponível, usa a simétrica. */
 function inrushTotal(){
   const m = typeof inrushEfetivo === "function" ? inrushEfetivo() : 0;
   if (!m) return null;
@@ -84,7 +85,8 @@ function inrushTotal(){
   if (!L.length) return null;
   let k = 0; L.forEach((x, i) => { if (x.kva > L[k].kva) k = i; });
   const outros = L.filter((x, i) => i !== k), somaIn = outros.reduce((a, x) => a + x.in, 0), somaMag = L.reduce((a, x) => a + x.mag, 0);
-  const icc = (typeof iccEstudo === "function" ? iccEstudo() : {}).i3, temIcc = typeof icc === "number" && isFinite(icc) && icc > 0;
+  const ok = x => typeof x === "number" && isFinite(x) && x > 0, ce = typeof iccEstudo === "function" ? iccEstudo() : {};
+  const icc = ok(ce.i3a) ? ce.i3a : ce.i3, temIcc = ok(icc), iccAssim = ok(ce.i3a);
   const par = (a, b) => 1 / (1 / a + 1 / b);
   const m1 = L[k].mag + somaIn;
   let v;
@@ -93,7 +95,7 @@ function inrushTotal(){
   else if (m === 3) v = somaMag;
   else if (m === 4) v = temIcc ? par(somaMag, icc) : null;
   else v = 8 * L[k].in + 4 * somaIn;
-  return v != null && isFinite(v) && v > 0 ? { I: v, metodo: m } : null;
+  return v != null && isFinite(v) && v > 0 ? { I: v, metodo: m, icc: temIcc ? icc : null, iccAssim } : null;
 }
 /* Pontos ANSI de cada transformador (ponto de 2 s da curva de dano), na tensão base do gráfico.
    tipo "ansi" (visão Fase): I ANSI primário; "nansi" (visão Neutro): I NANSI primário. */

@@ -5,7 +5,7 @@
      Z_fiação = Z_cabo (Ω/km) × distância (m) / 1000 × 2
      Z_relé = (VA_fase + 3 × VA_neutro) / I_secundária²
      Z_TC = Z_burden × 0,2  (Z_burden = 1 Ω)
-   Icc_máx = maior curto de fase do estudo (trifásica assimétrica; se faltar, a simétrica). RTC = I primária ÷ I secundária.
+   Icc_máx = maior curto de fase do estudo (trifásica assimétrica; se faltar, a simétrica). CPFL: na saturação usa-se 10,6 kA no lugar da Icc_máx. RTC = I primária ÷ I secundária.
    Relação: Icc_máx ÷ 20 ≤ Iptc ≤ Imín ÷ 0,1 (sugerida = menor padronizada ≥ Icc_máx ÷ 20). Obrigatório: só Icc_máx ÷ 20; Imín ÷ 0,1 é boa prática (aviso). Ith = 80 × In, Id = 2,5 × Ith (artigos Mesh Engenharia / NBR 6856). */
 "use strict";
 
@@ -14,6 +14,7 @@ const TC_CLASSES = [50, 100, 200, 400, 800];            // tensão de saturaçã
 /* Nomenclatura da classe: antiga (NBR 6856: 10B50) e nova entre parênteses (S VA 10P20, S = Tensão de saturação × I secundária ÷ 20) */
 const tcNovo = (v, sec) => ptbr((Math.round(v * sec / 20 * 10) / 10).toString()) + "VA10P20";
 const tcNome = (v, sec) => `10B${v} (${tcNovo(v, sec)})`;
+const TC_CPFL_ICC_SAT = 10600;                         // CPFL: corrente de curto adotada na verificação de saturação (10,6 kA)
 const TC_SENS = 0.1;                                    // critério de sensibilidade: corrente primária ≤ Imín ÷ 0,1
 const TC_FATOR_TC = 0.2;                                // Impedância do TC = Z_burden × 0,2
 const tcBlank = () => ({ fator: 1.2, sec: 5, rtc: null, classe: null, zc: 4.7, cL: 10, vaF: 0.3, vaN: 0.3, zbur: 1, imin: null });
@@ -35,6 +36,8 @@ function tcCalc(){
   r.itot = ok ? s : null;
   const v = typeof iccEstudo === "function" ? iccEstudo() : {}, pos = x => typeof x === "number" && isFinite(x) && x > 0;
   r.icc = pos(v.i3a) ? v.i3a : pos(v.i3) ? v.i3 : null; r.iccAssim = pos(v.i3a);
+  /* CPFL: na verificação de saturação usa-se 10,6 kA no lugar da Icc do estudo. O ÷ 20 da relação continua com a Icc (assimétrica). */
+  r.iccSat = S.info && S.info.conc === "cpfl" ? TC_CPFL_ICC_SAT : r.icc; r.iccSatFixa = r.iccSat !== r.icc;
   r.ia = r.itot != null ? r.itot * T.fator : null;
   r.ib = r.icc != null ? r.icc / 20 : null;
   const alvo = r.ib || 0;
@@ -47,7 +50,7 @@ function tcCalc(){
   r.zrele = (T.vaF + 3 * T.vaN) / (T.sec * T.sec);
   r.ztc = T.zbur * TC_FATOR_TC;
   r.zcarga = r.zfio + r.zrele + r.ztc;
-  r.vsat = r.icc != null && r.rtc ? r.icc / r.rtc * r.zcarga : null;
+  r.vsat = r.iccSat != null && r.rtc ? r.iccSat / r.rtc * r.zcarga : null;
   r.classeAuto = !T.classe && r.vsat != null ? (TC_CLASSES.find(x => x >= r.vsat) || null) : null;
   r.vnom = T.classe || r.classeAuto;
   // sensibilidade: corrente primária do TC ≤ corrente de partida do neutro (51N) do cliente ÷ 0,1
@@ -74,7 +77,7 @@ const tcSt = ok => ok == null ? '<span class="tcs na">—</span>' : ok ? '<span 
 /* Diagrama didático: TC com o primário (Icc), a RTC e o circuito do secundário (um retângulo: impedância do TC no lado de cima,
    dos condutores no lado direito e do relé embaixo); a tensão de saturação aparece entre os terminais. */
 function tcDiagrama(r){
-  const T = S.tc, W = 820, H = 424, cx = 262, cy = 177, R = 70, fm = (n, d) => tcF(n, d);
+  const T = S.tc, W = 820, H = 432, cx = 262, cy = 177, R = 70, fm = (n, d) => tcF(n, d);
   const ok = r.vsat != null ? (r.vnom ? r.vsat <= r.vnom : false) : null, cl = ok === false ? "no" : "ok";
   const box = (x, y, w, h, val, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" class="dg-b ${c || ""}"/><text x="${x + w / 2}" y="${y + h / 2 + 7}" text-anchor="middle" class="dg-n ${c || ""}">${val}</text>`;
   const lab = (x, y, l1, l2, anc) => `<text x="${x}" y="${y}" text-anchor="${anc || "middle"}" class="dg-t"><tspan x="${x}">${l1}</tspan><tspan x="${x}" dy="15">${l2}</tspan></text>`;
@@ -91,7 +94,7 @@ function tcDiagrama(r){
   // primário: entra pelo furo do núcleo, antes das voltas do secundário
   // enrolamento primário (poucas voltas, lado esquerdo do núcleo) alimentado pela corrente de curto
   for (const a of [147, 169, 191, 213]){ const [x, y] = pt(a); o += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="22" ry="5.5" transform="rotate(${a} ${x.toFixed(1)} ${y.toFixed(1)})" class="dg-coil"/>`; }
-  o += lab(8, cy - 56, "Corrente de curto", "máxima [A]", "start") + box(8, cy - 24, 104, 48, fm(r.icc, 0));
+  o += lab(8, cy - 56, "Corrente de curto", "máxima [A]", "start") + box(8, cy - 24, 104, 48, fm(r.iccSat, 0));
   o += `<path d="M112 ${cy} H${cx - R - 26}" class="dg-p" marker-end="url(#dgA)"/><text x="${(112 + cx - R - 26) / 2}" y="${cy - 8}" text-anchor="middle" class="dg-s">primário</text>`;
   o += `<text x="${cx - 6}" y="${cy - 40}" text-anchor="middle" class="dg-t">RTC</text>` + box(cx - 38, cy - 33, 64, 30, fm(r.rtc, 1));
   o += `<text x="${cx - 6}" y="${cy + 10}" text-anchor="middle" class="dg-s">${r.ipn ? fm(r.ipn, 0) + " ÷ " + T.sec : ""}</text>`;
@@ -106,15 +109,15 @@ function tcDiagrama(r){
   o += `<path d="M${XT} ${BOTY - 5} V${TOPY + 5}" class="dg-p" marker-end="url(#dgA)" marker-start="url(#dgA)"/><path d="M${XT} ${YM + 14} H${XA + 20}" class="dg-d"/>`;
   o += lab(XA + 75, YM - 30, "Tensão de saturação", "calculada [V]") + box(XA + 20, YM - 8, 110, 44, fm(r.vsat, 1), cl);
   // identificação do TC
-  const tag = (x, w, t, u) => `<rect x="${x}" y="376" width="${w}" height="32" rx="5" class="dg-tag"/><text x="${x + w / 2}" y="397" text-anchor="middle" class="dg-tg">${t}${u ? ` <tspan class="dg-tu">${u}</tspan>` : ""}</text>`;
-  o += `<text x="8" y="397" class="dg-s">TC adotado</text>` + tag(90, 100, r.ipn ? fm(r.ipn, 0) : "—", "A") + tag(200, 120, r.vnom ? tcNovo(r.vnom, T.sec).replace("VA10P20", "") : "—", "VA") + tag(330, 110, r.vnom ? "10 P 20" : "—", "") + tag(450, 80, String(T.sec), "A");
+  const tag = (x, w, t, u) => `<rect x="${x}" y="372" width="${w}" height="46" rx="6" class="dg-tag"/><text x="${x + w / 2}" y="403" text-anchor="middle" class="dg-tg">${t}${u ? ` <tspan class="dg-tu">${u}</tspan>` : ""}</text>`;
+  o += `<text x="8" y="402" class="dg-ta">TC adotado</text>` + tag(118, 120, r.ipn ? fm(r.ipn, 0) : "—", "A") + tag(250, 140, r.vnom ? tcNovo(r.vnom, T.sec).replace("VA10P20", "") : "—", "VA") + tag(402, 130, r.vnom ? "10 P 20" : "—", "") + tag(544, 100, String(T.sec), "A");
   return o + "</svg>";
 }
 /* Passo a passo (ao lado do diagrama) */
 function tcPassos(r){
-  const fm = (n, d) => tcF(n, d), isec = r.icc != null && r.rtc ? r.icc / r.rtc : null, ok = r.vsat != null ? (r.vnom ? r.vsat <= r.vnom : false) : null;
+  const fm = (n, d) => tcF(n, d), isec = r.iccSat != null && r.rtc ? r.iccSat / r.rtc : null, ok = r.vsat != null ? (r.vnom ? r.vsat <= r.vnom : false) : null;
   return `<aside class="tcpas"><h5>Impedância total secundária</h5><ol>
-    <li><b>Corrente no secundário</b><span>Icc ÷ RTC = ${fm(r.icc, 0)} ÷ ${fm(r.rtc, 1)}</span><em>${fm(isec, 1)} A</em></li>
+    <li><b>Corrente no secundário</b><span>Icc ÷ RTC = ${fm(r.iccSat, 0)} ÷ ${fm(r.rtc, 1)}</span><em>${fm(isec, 1)} A</em></li>
     <li><b>Impedância de carga</b><span>condutores + relé + TC = ${fm(r.zfio, 3)} + ${fm(r.zrele, 3)} + ${fm(r.ztc, 3)}</span><em>${fm(r.zcarga, 3)} Ω</em></li>
     <li><b>Tensão de saturação calculada</b><span>corrente no secundário × impedância de carga = ${fm(isec, 1)} × ${fm(r.zcarga, 3)}</span><em class="${ok === false ? "no" : ""}">${fm(r.vsat, 1)} V</em></li>
   </ol></aside>`;
@@ -130,7 +133,7 @@ function tcVisual(r){
   const G = [];
   if (r.itot != null && r.ipn) G.push({ rot: "Corrente nominal da instalação", v: r.itot, lim: r.ipn, un: "A", limRot: "corrente primária do TC", d: 1 });
   if (r.vsat != null && r.vnom) G.push({ rot: "Tensão de saturação calculada (Icc_máx ÷ RTC × Impedância de carga)", v: r.vsat, lim: r.vnom, un: "V", limRot: "tensão de saturação nominal da classe", d: 1 });
-  let o = `<div class="tcdg">${tcDiagrama(r)}${tcPassos(r)}</div>${tcVeredito(r)}`;
+  let o = `<div class="tcdg">${tcPassos(r)}${tcDiagrama(r)}</div>${tcVeredito(r)}`;
   if (!G.length) return o;
   if (r.ipn && r.ipnMax != null) G.push({ rot: "Sensibilidade: corrente primária do TC", v: r.ipn, lim: r.ipnMax, un: "A", limRot: "51N do cliente ÷ 0,1 (boa prática)", d: 1, soft: true });
   const W = 900, RH = 54, X0 = 12, TW = W - 24, f = 1.5, H = G.length * RH + 6;
@@ -225,6 +228,7 @@ function updateTC(){
     ${linha("Impedância do TC", tcF(r.ztc, 3), "Ω", "", "Z_burden × 0,2")}
     ${linha("<b>Impedância de carga</b>", `<b>${tcF(r.zcarga, 3)}</b>`, "Ω", "", "Impedância dos condutores + Impedância do relé + Impedância do TC")}
     ${linha("Icc máxima considerada", tcF(r.icc, 0), "A", "", r.iccAssim ? "Trifásica assimétrica do estudo" : "Trifásica simétrica (a assimétrica não está disponível)")}
+    ${r.iccSatFixa ? linha("Corrente de curto na saturação", tcF(r.iccSat, 0), "A", "", "CPFL: adota-se 10,6 kA no lugar da Icc do estudo") : ""}
     ${linha("<b>Tensão de saturação calculada</b>", `<b>${tcF(r.vsat, 2)}</b>`, "V", "", "Icc_máx ÷ RTC × Impedância de carga")}
     ${linha("<b>Tensão de saturação nominal (classe)</b>", `<b>${r.vnom ? r.vnom : "—"}</b>${r.vnom ? "" : ""}`, "V", tcSt(okV), "Deve ser maior ou igual ao Tensão de saturação calculada")}
     ${linha("<b>Classe de exatidão</b>", `<b>${classeTxt}</b>${T.classe ? "" : " (automática)"}`)}

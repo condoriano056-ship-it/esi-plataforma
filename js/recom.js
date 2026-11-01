@@ -25,47 +25,53 @@ function demCalc(){
 }
 
 /* ---------- multiplicadores (ordem de ajuste de proteção) ----------
-   Cada ajuste de corrente/potência/tensão tem uma ou mais "bases" (corrente da demanda, inrush, outra função, ajuste da
-   concessionária...) e um campo de multiplicador. Valor final = base × multiplicador; com mais de uma base valendo, vale o menor.
-   Bases com multiplicador padrão (def) já preenchem o campo; as demais ficam em branco até o usuário digitar.
-   S.mult["fn|set|campo|base"] = multiplicador digitado; S.mao["fn|set|campo"] = valor final digitado à mão (não é sobrescrito);
-   S.mAuto[fn] = função já habilitada automaticamente uma vez (se o usuário desligar, não liga de novo). */
+   Cada ajuste de corrente/potência/tensão tem uma ou mais "bases" (potência dos transformadores, demanda, inrush, outra função,
+   ajuste da concessionária...). O USUÁRIO ESCOLHE a base (lista) e DIGITA o multiplicador: valor final = base escolhida × multiplicador.
+   Não há multiplicador padrão nem habilitação automática: nada é preenchido até o usuário digitar o multiplicador.
+   S.mult["fn|set|campo|base"] = multiplicador digitado; S.mbase["fn|set|campo"] = base escolhida (padrão: a primeira da lista);
+   S.mao["fn|set|campo"] = valor final digitado à mão (não é sobrescrito). */
 const REC_DT = 0.3;                          // diferença mínima de tempo para a concessionária, s
 const r2 = x => Math.round(x * 100) / 100;
 const fmtN = x => x == null ? "—" : showNum(r2(x));
 const posN = x => typeof x === "number" && isFinite(x) && x > 0 ? x : null;
+const trafKva = () => { const n = Math.max(1, Math.min(TR_MAX, S.nTrafos || 1)); return S.trafos.slice(0, n).reduce((a, t) => a + (t.kva > 0 ? t.kva : 0), 0); };
 function multDefs(){
   const D = demCalc(), C = S.concProt.funcs, F = S.cliente.funcs, cip = (id, set) => { const f = C[id]; return f && f.en && f[set] && f[set].ip > 0 ? f[set].ip : null; };
-  const conc = (id, set, nome, def) => ({ id: "c" + id, lab: `${nome} da concessionária`, val: cip(id, set), un: "A", def });
-  const exp = D.zero ? "0,10" : (D.pger > 1000 ? "1,05" : "1,10");
+  const conc = (id, set, nome) => ({ id: "c" + id, lab: `${nome} da concessionária`, val: cip(id, set), un: "A" });
+  const exp = D.zero ? "0,10" : (D.pger > 1000 ? "1,05" : "1,10");        // só dica no campo (placeholder), nunca é aplicada
   const it = typeof inrushTotal === "function" ? inrushTotal() : null;
-  const dem = def => ({ id: "dem", lab: "corrente nominal da demanda", val: D.ibase, un: "A", def });
-  const nom = (fn, set, lab, val, un) => ({ fn, set, k: "ip", lab, un, bases: [{ id: "nom", lab: "valor nominal", val, un, def: null }] });
+  const kva = trafKva(), V = S.baseKV > 0 ? S.baseKV : null;
+  const cli = (id, set, lab, bid) => ({ id: bid, lab, val: F[id] ? posN(F[id][set].ip) : null, un: "A" });
   const out = [
-    { fn: "51", set: "s1", k: "ip", lab: "Ip₁", un: "A", bases: [dem(1.1), conc("51", "s1", "51", null)] },
-    { fn: "50", set: "m", k: "ip", lab: "Instan", un: "A", bases: [{ id: "inr", lab: "corrente de inrush total", val: it ? it.I : null, un: "A", def: 1.1 }, conc("50", "m", "50", null)] },
-    { fn: "51N", set: "s1", k: "ip", lab: "Ip₁", un: "A", bases: [{ id: "f51", lab: "51 de fase do cliente", val: F["51"] ? posN(F["51"].s1.ip) : null, un: "A", def: 0.2 }, conc("51N", "s1", "51N", null)] },
-    { fn: "50N", set: "m", k: "ip", lab: "Instan", un: "A", bases: [{ id: "f50", lab: "50 de fase do cliente", val: F["50"] ? posN(F["50"].m.ip) : null, un: "A", def: 0.2 }, conc("50N", "m", "50N", null)] },
-    { fn: "51G", set: "s1", k: "ip", lab: "Ip₁", un: "A", bases: [conc("51G", "s1", "51GS", 0.8)] },
-    { fn: "46", set: "m", k: "ip", lab: "Pickup", un: "A", bases: [dem(0.15)] }
+    { fn: "51", set: "s1", k: "ip", lab: "Ip₁", un: "A", bases: [
+      { id: "trf", lab: "potência total dos transformadores", val: kva > 0 && V ? kva / (Math.sqrt(3) * V) : null, un: "A" },
+      { id: "dem", lab: "demanda contratada", val: D.ibase, un: "A" },
+      Object.assign(conc("51", "s1", "51"), { lab: "51 de fase da concessionária" })] },
+    { fn: "50", set: "m", k: "ip", lab: "Instan", un: "A", bases: [{ id: "inr", lab: "inrush total", val: it ? it.I : null, un: "A" }, conc("50", "m", "50")] },
+    { fn: "51N", set: "s1", k: "ip", lab: "Ip₁", un: "A", bases: [conc("51N", "s1", "51N"), cli("51", "s1", "51 de fase do cliente", "f51")] },
+    { fn: "50N", set: "m", k: "ip", lab: "Instan", un: "A", bases: [cli("50", "m", "50 do cliente", "f50"), conc("50N", "m", "50N")] },
+    { fn: "51G", set: "s1", k: "ip", lab: "Ip₁", un: "A", bases: [cli("51N", "s1", "51N do cliente", "f51n"), conc("51G", "s1", "51GS")] },
+    { fn: "46", set: "m", k: "ip", lab: "Pickup", un: "A", bases: [{ id: "dem", lab: "demanda contratada", val: D.ibase, un: "A" }] }
   ];
   {                                                  // 67, 32 e 59N: sempre listadas; sem geração a base fica "sem valor"
-    ["s1", "s2"].forEach(set => out.push({ fn: "67", set, k: "ip", lab: set === "s1" ? "Ip₁" : "Ip₂", un: "A", bases: [{ id: "ipg", lab: "corrente nominal de geração/exportação", val: D.ipg, un: "A", def: null, ph: exp }] }));
-    out.push({ fn: "32", set: "m", k: "ip", lab: "Pickup", un: "kW", bases: [{ id: "pg", lab: "potência de geração", val: D.pger, un: "kW", def: null, ph: exp }] });
-    out.push({ fn: "59N", set: "m", k: "ip", lab: "Pickup", un: "V", bases: [{ id: "vff", lab: "tensão fase-fase", val: S.baseKV > 0 ? S.baseKV * 1000 : null, un: "V", def: null, ph: "0,35" }] });
+    ["s1", "s2"].forEach(set => out.push({ fn: "67", set, k: "ip", lab: set === "s1" ? "Ip₁" : "Ip₂", un: "A", bases: [{ id: "ipg", lab: "corrente nominal de geração/exportação", val: D.ipg, un: "A", ph: exp }] }));
+    out.push({ fn: "32", set: "m", k: "ip", lab: "Pickup", un: "kW", bases: [{ id: "pg", lab: "potência de geração", val: D.pger, un: "kW", ph: exp }] });
+    out.push({ fn: "59N", set: "m", k: "ip", lab: "Pickup", un: "V", bases: [{ id: "vff", lab: "tensão fase-fase", val: S.baseKV > 0 ? S.baseKV * 1000 : null, un: "V", ph: "0,35" }] });
   }
-  [["27", "s1", "Pickup", "% Vn", "tensão nominal (100 %)", 100], ["59", "s1", "Pickup", "% Vn", "tensão nominal (100 %)", 100], ["47", "m", "Pickup", "% V2/V1", "referência (100 %)", 100]].forEach(([fn, set, lab, un, bl, v]) =>
-    out.push({ fn, set, k: "ip", lab, un, bases: [{ id: "vn", lab: bl, val: v, un: "%", def: null }] }));
-  [["o1", "81O · estágio 1"], ["o2", "81O · estágio 2"], ["u1", "81U · estágio 1"], ["u2", "81U · estágio 2"]].forEach(([set, lab]) => out.push({ fn: "81O/U", set, k: "ip", lab: lab.replace(" · estágio ", "-E"), un: "Hz", bases: [{ id: "f0", lab: "frequência nominal", val: 60, un: "Hz", def: null }] }));
+  // 59 e 27 (funções de fase): o usuário escolhe se o multiplicador vale sobre a tensão de linha ou a de fase (a base é 100 % Vn; vref = tensão em volts)
+  ["59", "27"].forEach(fn => ["s1", "s2"].forEach(set => out.push({ fn, set, k: "ip", lab: `Pickup${set === "s2" ? " (estágio 2)" : ""}`, un: "% Vn", bases: [
+    { id: "vl", lab: "tensão de linha", val: 100, un: "%", vref: V ? V * 1000 : null },
+    { id: "vf", lab: "tensão de fase", val: 100, un: "%", vref: V ? V * 1000 / Math.sqrt(3) : null }] })));
+  out.push({ fn: "47", set: "m", k: "ip", lab: "Pickup", un: "% V2/V1", bases: [{ id: "vn", lab: "referência (100 %)", val: 100, un: "%" }] });
+  [["o1", "81O · estágio 1"], ["o2", "81O · estágio 2"], ["u1", "81U · estágio 1"], ["u2", "81U · estágio 2"]].forEach(([set, lab]) => out.push({ fn: "81O/U", set, k: "ip", lab: lab.replace(" · estágio ", "-E"), un: "Hz", bases: [{ id: "f0", lab: "frequência nominal", val: 60, un: "Hz" }] }));
   return out;
 }
 const multKey = (d, b) => `${d.fn}|${d.set}|${d.k}|${b.id}`, campoKey = d => `${d.fn}|${d.set}|${d.k}`;
-const multEf = (d, b) => { const m = (S.mult || {})[multKey(d, b)]; return m > 0 ? m : b.def; };
-// valor final de um campo: menor entre base × multiplicador das bases que valem (null se nenhuma)
-function multFinal(d){
-  const v = d.bases.map(b => { const m = multEf(d, b); return m > 0 && b.val != null ? b.val * m : null; }).filter(x => x != null);
-  return v.length ? r2(Math.min(...v)) : null;
-}
+const multEf = (d, b) => { const m = (S.mult || {})[multKey(d, b)]; return m > 0 ? m : null; };
+const selBase = d => d.bases.find(b => b.id === (S.mbase || {})[campoKey(d)]) || d.bases[0];      // base escolhida pelo usuário (padrão: a primeira)
+// valor final de um campo: base escolhida × multiplicador digitado (null se faltar um dos dois)
+function multFinal(d){ const b = selBase(d), m = multEf(d, b); return m > 0 && b.val != null ? r2(b.val * m) : null; }
+const multOutTxt = (d, b) => { const m = multEf(d, b); if (!(m > 0) || b.val == null) return ""; const v = r2(b.val * m); return `= ${fmtN(v)} ${d.un}` + (b.vref ? ` (${fmtN(v / 100 * b.vref)} V)` : ""); };
 
 /* Como cada base é obtida (fórmula com os números do projeto) */
 function baseHowHTML(b){
@@ -77,14 +83,16 @@ function baseHowHTML(b){
   }
   if (b.id === "inr"){
     const it = typeof inrushTotal === "function" ? inrushTotal() : null, m = it && INRUSH_METODOS.find(x => x.n === it.metodo);
-    return it && m ? `<span class="form">${m.f}</span> = <b>${f(it.I)} A</b> <em>(${m.nome}, na tensão de base)</em>` : `Defina o método de inrush (Dados da Concessionária) e os transformadores (Dados da instalação).`;
+    return it && m ? `<span class="form">${m.f}</span> = <b>${f(it.I)} A</b> <em>(${m.nome}, na tensão de base)</em>${it.icc && (it.metodo === 2 || it.metodo === 4) ? `<br><em>I<sub>cc</sub> = ${f(it.icc)} A — ${it.iccAssim ? "trifásica assimétrica" : "trifásica simétrica (a assimétrica não está disponível)"}</em>` : ""}` : `Defina o método de inrush (Dados da Concessionária) e os transformadores (Dados da instalação).`;
   }
   if (b.id === "ipg") return D.pger ? `${I("I", "ger")} = ${I("P", "ger")} ÷ (√3 · ${I("V", "BT")}) · ${I("V", "BT")} ÷ ${I("V", "base")} = <b>${f(D.ipg)} A</b>` : `Informe a potência de geração em Dados da instalação.`;
   if (b.id === "pg") return `Potência de geração informada em Dados da instalação: <b>${f(D.pger)} kW</b>`;
   if (b.id === "vff") return `${I("V", "ff")} = tensão de base = <b>${f(S.baseKV * 1000)} V</b>`;
   if (b.id === "vn") return `Referência = 100 % da tensão nominal`;
   if (b.id === "f0") return `Referência = frequência nominal <b>60 Hz</b>`;
-  if (b.id === "f51" || b.id === "f50") return `Valor já ajustado da função ${b.id === "f51" ? "51" : "50"} do cliente: <b>${f(b.val)} A</b>`;
+  if (b.id === "trf"){ const kva = trafKva(); return kva > 0 && S.baseKV > 0 ? `${I("I", "nom")} = ΣkVA ÷ (√3 · ${I("V", "base")}) = ${f(kva)} ÷ (√3 · ${f(S.baseKV)} kV) = <b>${f(b.val)} A</b> <em>(potência total dos transformadores, na tensão de base)</em>` : `Informe a potência dos transformadores (Dados da instalação) e a tensão de base.`; }
+  if (b.id === "vl" || b.id === "vf") return b.vref ? `${b.lab[0].toUpperCase() + b.lab.slice(1)} = <b>${f(b.vref)} V</b> = 100 % Vn${b.id === "vf" ? " <em>(tensão de linha ÷ √3)</em>" : ""}. O multiplicador é aplicado sobre 100 % e o resultado também aparece em volts.` : `Informe a tensão de base.`;
+  if (b.id === "f51" || b.id === "f50" || b.id === "f51n") return `Valor já ajustado da função ${b.lab.split(" ")[0]} do cliente: <b>${f(b.val)} A</b>`;
   if (b.id[0] === "c") return `Ajuste da função ${b.lab.split(" ")[0]} da concessionária (aba Dados da Concessionária): <b>${f(b.val)} A</b>`;
   return "";
 }
@@ -93,21 +101,19 @@ function multHTML(fn){
   const defs = multDefs().filter(d => d.fn === fn); if (!defs.length) return "";
   const vistos = new Set(), como = [];
   const linhas = defs.map(d => {
-    const mao = (S.mao || {})[campoKey(d)], fins = [];
-    const rows = d.bases.map(b => {
-      const key = multKey(d, b), m = multEf(d, b), fin = m > 0 && b.val != null ? r2(b.val * m) : null;
-      if (fin != null) fins.push(fin);
-      if (!vistos.has(b.id)){ vistos.add(b.id); const h = baseHowHTML(b); if (h) como.push(`<div class="cq-how"><b>${b.lab}</b><span>${h}</span></div>`); }
-      return `<div class="cq-line"><span class="cq-l">${d.lab} =</span>
-        <div class="box"><input type="text" inputmode="decimal" autocomplete="off" data-mult="${key}" placeholder="${b.ph || (b.def ? showNum(b.def) : "mult.")}" value="${showNum(m > 0 ? m : null)}" aria-label="Multiplicador de ${d.lab} sobre ${b.lab}"><span class="u">×</span></div>
-        <span class="cq-b">${b.lab} <em>(${b.val != null ? fmtN(b.val) + " " + b.un : "sem valor"})</em></span>
-        <output data-multout="${key}">${fin != null ? "= " + fmtN(fin) + " " + d.un : ""}</output></div>`;
-    }).join("");
-    const adot = mao ? `<p class="cq-fin">${d.lab}: valor digitado à mão. <button type="button" class="btn sm" data-multusar="${campoKey(d)}">Usar multiplicadores</button></p>`
-      : fins.length ? `<p class="cq-fin" data-adot="${campoKey(d)}">${d.bases.length > 1 && fins.length > 1 ? "Vale o menor: " : ""}${d.lab} adotado = <b>${fmtN(Math.min(...fins))} ${d.un}</b></p>` : "";
-    return `<div class="cq"><p class="cq-t">${d.lab}</p>${rows}${adot}</div>`;
+    const mao = (S.mao || {})[campoKey(d)], sel = selBase(d);
+    const key = multKey(d, sel), m = multEf(d, sel), fin = multFinal(d);
+    if (!vistos.has(sel.id + "|" + d.set)){ vistos.add(sel.id + "|" + d.set); const h = baseHowHTML(sel); if (h) como.push(`<div class="cq-how"><b>${sel.lab}</b><span>${h}</span></div>`); }
+    const lista = d.bases.length > 1 ? `<label class="cq-base"><span>Base de cálculo</span><select data-mbase="${campoKey(d)}" aria-label="Base de cálculo de ${d.lab}">${d.bases.map(b => `<option value="${b.id}" ${b === sel ? "selected" : ""}>${b.lab}</option>`).join("")}</select></label>` : "";
+    const row = `<div class="cq-line"><span class="cq-l">${d.lab} =</span>
+        <div class="box"><input type="text" inputmode="decimal" autocomplete="off" data-mult="${key}" placeholder="${sel.ph || "mult."}" value="${showNum(m)}" aria-label="Multiplicador de ${d.lab} sobre ${sel.lab}"><span class="u">×</span></div>
+        <span class="cq-b">${sel.lab} <em>(${sel.val != null ? (sel.vref ? fmtN(sel.vref) + " V" : fmtN(sel.val) + " " + sel.un) : "sem valor"})</em></span>
+        <output data-multout="${key}">${multOutTxt(d, sel)}</output></div>`;
+    const adot = mao ? `<p class="cq-fin">${d.lab}: valor digitado à mão. <button type="button" class="btn sm" data-multusar="${campoKey(d)}">Usar multiplicador</button></p>`
+      : fin != null ? `<p class="cq-fin" data-adot="${campoKey(d)}">${d.lab} adotado = <b>${fmtN(fin)} ${d.un}</b></p>` : "";
+    return `<div class="cq"><p class="cq-t">${d.lab}</p>${lista}${row}${adot}</div>`;
   }).join("");
-  return `<div class="multbox" data-multbox="${fn}"><p class="fnote">Valor = multiplicador × base. Apague o multiplicador para voltar ao padrão.</p>${linhas}<div class="cq-hows">${como.join("")}</div></div>`;
+  return `<div class="multbox" data-multbox="${fn}"><p class="fnote">Escolha a base de cálculo e digite o multiplicador: valor = base × multiplicador.</p>${linhas}<div class="cq-hows">${como.join("")}</div></div>`;
 }
 
 /* Dial (ou tempo) máximo para manter 300 ms abaixo da curva temporizada da concessionária */
@@ -134,7 +140,7 @@ function dialNotaHTML(fn){
 /* Cartão da área de cálculo (aba Ordem de ajuste): função habilitada + fórmulas + nota dos 300 ms */
 function calcCardHTML(id){
   const def = FUNC_BY_ID[id], D = demCalc(), mh = multHTML(id), dn = dialNotaHTML(id);
-  const sem = !mh && !dn ? `<p class="fnote">${["67", "32", "59N"].includes(id) && !D.ger ? "O cálculo desta função só existe quando a finalidade do estudo inclui geração (Página inicial)." : "Sem cálculo automático: preencha os ajustes diretamente ao lado."}</p>` : "";
+  const sem = !mh && !dn ? `<p class="fnote">${["67", "32", "59N"].includes(id) && !D.ger ? "O cálculo desta função só existe quando a finalidade do estudo inclui geração (Página inicial)." : "Sem cálculo de multiplicador para esta função: preencha os ajustes diretamente ao lado."}</p>` : "";
   const dg = id === "67" && typeof dirDiagramaHTML === "function" ? dirDiagramaHTML() : "";
   return `<section class="calc-card" data-calcfn="${id}"><h3 class="calc-h">Função ${esc(fnLabel(id))} <span>${esc(def.name)}</span></h3>${mh}${dn}${sem}${dg}</section>`;
 }
@@ -146,7 +152,7 @@ function renderCalc(force){
   if (!force && has.join() === ids.join() && host.contains(act)){
     host.querySelectorAll("[data-calcfn]").forEach(c => {
       if (!c.contains(act)){ c.outerHTML = calcCardHTML(c.dataset.calcfn); return; }
-      multDefs().filter(d => d.fn === c.dataset.calcfn).forEach(d => d.bases.forEach(b => { const o = c.querySelector(`[data-multout="${multKey(d, b)}"]`), m = multEf(d, b); if (o) o.textContent = m > 0 && b.val != null ? `= ${fmtN(b.val * m)} ${d.un}` : ""; }));
+      multDefs().filter(d => d.fn === c.dataset.calcfn).forEach(d => { const b = selBase(d), o = c.querySelector(`[data-multout="${multKey(d, b)}"]`); if (o) o.textContent = multOutTxt(d, b); });
       multDefs().filter(d => d.fn === c.dataset.calcfn).forEach(d => { const p = c.querySelector(`[data-adot="${campoKey(d)}"] b`), v = multFinal(d); if (p && v != null) p.textContent = `${fmtN(v)} ${d.un}`; });
     });
     return;
@@ -157,15 +163,15 @@ function renderCalc(force){
 
 /* Aplica os multiplicadores (na ordem, pois 51N e 50N dependem do 51 e do 50). Devolve true se algum valor mudou. */
 function multAplica(){
-  if (!S.mao) S.mao = {}; if (!S.mAuto) S.mAuto = {};
+  if (!S.mao) S.mao = {}; if (!S.mbase) S.mbase = {};
   let ch = false; const F = S.cliente.funcs;
   for (let passo = 0; passo < 3; passo++){                   // 51N e 50N dependem do 51 e do 50: repete até estabilizar
     let mudou = false;
     multDefs().forEach(d => {
       if (S.mao[campoKey(d)]) return;
+      const fn = F[d.fn]; if (!fn.en) return;                // nunca liga função sozinho
       const v = multFinal(d); if (v == null) return;
-      const fn = F[d.fn], tgt = fn[d.set];
-      if (!fn.en && !S.mAuto[d.fn]){ fn.en = true; S.mAuto[d.fn] = true; mudou = true; }
+      const tgt = fn[d.set];
       if (tgt[d.k] !== v){ tgt[d.k] = v; mudou = true; }
     });
     if (!mudou) break; ch = true;
@@ -204,6 +210,12 @@ function multMao(fn, set, k, tem){
     if (v > 0) S.mult[key] = v; else delete S.mult[key];
     delete S.mao[key.split("|").slice(0, 3).join("|")];
     multAplica(); multTela(); render(); if (typeof updateTC === "function") updateTC(); touch();
+  });
+  host.addEventListener("change", e => {
+    const el = e.target, k = el.dataset && el.dataset.mbase; if (!k) return;
+    if (!S.mbase) S.mbase = {}; S.mbase[k] = el.value;
+    multAplica(); renderCalc(true); render(); if (typeof updateTC === "function") updateTC(); touch();
+    const novo = host.querySelector(`[data-mbase="${k}"]`); if (novo) novo.focus();
   });
   host.addEventListener("focusout", e => { const el = e.target; if (el.dataset && el.dataset.mult){ const d = multDefs().find(x => el.dataset.mult.startsWith(campoKey(x) + "|")), b = d && d.bases.find(x => multKey(d, x) === el.dataset.mult); if (b){ const m = multEf(d, b); el.value = showNum(m > 0 ? m : null); } } });
   host.addEventListener("click", e => {

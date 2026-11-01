@@ -13,11 +13,11 @@ const INRUSH_METODOS = [
   { n: 1, nome: "Método 1", resumo: "Maior I<sub>mag</sub> + demais In", tipo: "Parcial",
     f: `${I_("I", "inrush")} = ${I_("I", "mag(maior)")} + Σ ${I_("In", "demais trafos")}` },
   { n: 2, nome: "Método 2", resumo: "Método 1 limitado pelo curto-circuito", tipo: "Real",
-    f: `${I_("I", "inrush")} = ${FR("1", `${FR("1", I_("I", "método 1"))}<b>+</b>${FR("1", I_("I", "ccMáx"))}`)}` },
+    f: `${I_("I", "inrush")} = ${FR("1", `${FR("1", I_("I", "método 1"))}<b>+</b>${FR("1", I_("I", "cc3φ assim."))}`)}` },
   { n: 3, nome: "Método 3", resumo: "Soma de todos os I<sub>mag</sub>", tipo: "Parcial",
     f: `${I_("I", "inrush")} = Σ ${I_("I", "mag (todos os trafos)")}` },
   { n: 4, nome: "Método 4", resumo: "Método 3 limitado pelo curto-circuito", tipo: "Real",
-    f: `${I_("I", "inrush")} = ${FR("1", `${FR("1", I_("I", "método 3"))}<b>+</b>${FR("1", I_("I", "ccMáx"))}`)}` },
+    f: `${I_("I", "inrush")} = ${FR("1", `${FR("1", I_("I", "método 3"))}<b>+</b>${FR("1", I_("I", "cc3φ assim."))}`)}` },
   { n: 5, nome: "Método 5", resumo: "8 × In(maior) + 4 × demais In", tipo: "Parcial",
     f: `${I_("I", "inrush")} = 8 × ${I_("I", "n(maior)")} + 4 × Σ ${I_("In", "demais trafos")}` },
 ];

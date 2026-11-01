@@ -13,7 +13,7 @@ const blankInfo = () => ({ cliente: PARTY0(), contratada: PARTY0(), conc: "enel"
 
 function blank(){
   // "devices" fica reservado para a fase da concessionária (relé, disjuntor, transformador...), ainda sem interface
-  return { name: "", baseKV: null, baseS: null, axes: { ...AXES0 }, legend: true, showAll: false, vis: {}, view: "fase", info: blankInfo(), cliente: clienteEmpty(), concProt: clienteEmpty(), rede: redeBlank(), trechos: [trechoBlank()], rf: 40, zUnit: "ohm", redeModo: "imp", inrushMetodo: null, nTrafos: 1, trafos: [trafoBlank()], tc: tcBlank(), dem: demNormalize(), mult: {}, mao: {}, mAuto: {}, devices: [] };
+  return { name: "", baseKV: null, baseS: null, axes: { ...AXES0 }, legend: true, showAll: false, vis: {}, view: "fase", info: blankInfo(), cliente: clienteEmpty(), concProt: clienteEmpty(), rede: redeBlank(), trechos: [trechoBlank()], rf: 40, zUnit: "ohm", redeModo: "imp", inrushMetodo: null, nTrafos: 1, trafos: [trafoBlank()], tc: tcBlank(), dem: demNormalize(), mult: {}, mao: {}, mbase: {}, mAuto: {}, devices: [] };
 }
 const sample = () => blank();
 
@@ -37,7 +37,7 @@ function normalize(j){
   o.nTrafos = Number.isInteger(j.nTrafos) ? clamp(j.nTrafos, 1, TR_MAX) : o.trafos.length;
   o.tc = tcNormalize(j.tc);
   o.dem = demNormalize(j.dem);
-  o.mao = Object.assign({}, j.mao || {}); o.mAuto = Object.assign({}, j.mAuto || {});
+  o.mao = Object.assign({}, j.mao || {}); o.mbase = Object.assign({}, j.mbase || {}); o.mAuto = Object.assign({}, j.mAuto || {});
   o.mult = {}; Object.entries(j.mult || {}).forEach(([k, v]) => { if (typeof k === "string" && v > 0) o.mult[k] = v; });
   o.rede = redeNormalize(j.rede);
   o.vis = Object.assign({}, j.vis || {});

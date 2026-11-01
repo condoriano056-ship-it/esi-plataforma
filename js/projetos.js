@@ -69,57 +69,59 @@ const IC_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const IC_RELOGIO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>';
 const IC_LISTA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>';
 
+const IC_MAIS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const iniDia = t => new Date(t).toLocaleDateString("pt-BR");
 function renderInicio(){
   const L = LIB.lista, n = { finalizado: L.filter(p => p.status === "finalizado").length, andamento: L.filter(p => p.status !== "finalizado").length };
-  $("#iniCards").innerHTML = [
-    ["finalizado", "ok", IC_OK, n.finalizado, "Finalizados"],
-    ["andamento", "run", IC_RELOGIO, n.andamento, "Em andamento"],
-    ["todos", "all", IC_LISTA, L.length, "Ver todos"]
-  ].map(([k, cl, ic, v, t]) => `<button type="button" class="ini-card ${cl}" data-filtro="${k}" aria-pressed="${INI.filtro === k}"><span class="ic">${ic}</span><span><b>${v}</b><small>${t}</small></span></button>`).join("");
+  if ($("#iniIc") && typeof MOD_IC !== "undefined") $("#iniIc").innerHTML = MOD_IC.protecao;
+  const ult = L.slice().sort((a, b) => b.alterado - a.alterado)[0];
+  const tile = ic => `<span class="dsh-ic">${ic}</span>`;
+  $("#iniCards").innerHTML = `
+    <article class="dsh-card">
+      <div class="dsh-ch">${tile(typeof MOD_IC !== "undefined" ? MOD_IC.protecao : "")}<div><p class="dsh-k">Coordenograma · Ajuste dos relés</p><h3>Novo estudo</h3></div></div>
+      <p class="dsh-d">Cadastro do estudo, dados da concessionária e da instalação, ordem de ajuste e coordenograma.</p>
+      <div class="dsh-cf"><small>${L.length} estudo(s)</small><button type="button" class="dsh-bt" id="btnNovo2">${IC_MAIS} Novo estudo</button></div>
+    </article>
+    <article class="dsh-card">
+      <div class="dsh-ch">${tile(IC_RELOGIO)}<div><p class="dsh-k">Último estudo</p><h3>${ult ? esc(projTitulo(ult)) : "Nenhum estudo ainda"}</h3></div></div>
+      <p class="dsh-d">${ult ? esc([ult.cliente && ult.cliente !== projTitulo(ult) ? ult.cliente : "", iniConc(ult.conc)].filter(Boolean).join(" · ") || "Sem cliente informado") + " · alterado em " + iniData(ult.alterado) : "Crie o primeiro estudo para começar a preencher os dados."}</p>
+      <div class="dsh-cf"><small>${ult ? "ID " + ult.id : ""}</small>${ult ? `<button type="button" class="dsh-bt sec" data-acao="abrir-ult" data-id="${ult.id}">Abrir estudo</button>` : ""}</div>
+    </article>
+    <article class="dsh-card dsh-stat">
+      <div class="dsh-sl"><span class="dsh-ic ok">${IC_OK}</span><div><small>Finalizados</small><b>${n.finalizado}</b></div></div>
+      <div class="dsh-sl"><span class="dsh-ic">${IC_RELOGIO}</span><div><small>Em andamento</small><b>${n.andamento}</b></div></div>
+    </article>`;
+  $("#iniFiltros").innerHTML = [["todos", "Todos"], ["andamento", "Em andamento"], ["finalizado", "Finalizados"]]
+    .map(([k, t]) => `<button type="button" class="${INI.filtro === k ? "on" : ""}" data-filtro="${k}" aria-pressed="${INI.filtro === k}">${t}</button>`).join("");
 
   const q = INI.busca.trim().toLowerCase();
   let V = L.filter(p => INI.filtro === "todos" || (INI.filtro === "finalizado" ? p.status === "finalizado" : p.status !== "finalizado"))
            .filter(p => !q || [String(p.id), projTitulo(p), p.cliente, iniConc(p.conc), iniFin(p.fin)].join(" ").toLowerCase().includes(q));
   V.sort(INI.ord === "az" ? (a, b) => projTitulo(a).localeCompare(projTitulo(b), "pt-BR") : INI.ord === "id" ? (a, b) => b.id - a.id : (a, b) => b.alterado - a.alterado);
-  $("#iniCont").textContent = V.length + (V.length === 1 ? " ESTUDO" : " ESTUDOS");
+  $("#iniCont").textContent = V.length + (V.length === 1 ? " estudo" : " estudos");
 
-  if (!L.length){
-    $("#iniLista").innerHTML = `<div class="ini-vazio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-      <h2>Nenhum estudo criado ainda</h2><p>Crie o primeiro estudo para preencher o cadastro, os dados da instalação e a ordem de ajuste.</p>
-      <button class="btn-novo" type="button" data-acao="novo">Criar novo estudo</button></div>`;
-    return;
-  }
+  if (!L.length){ $("#iniLista").innerHTML = `<p class="ini-nada">Nenhum estudo ainda. Clique em "Novo estudo" para começar.</p>`; return; }
   if (!V.length){ $("#iniLista").innerHTML = `<p class="ini-nada">Nenhum estudo encontrado com esse filtro.</p>`; return; }
   const sh = V.slice(0, INI.mostrar);
-  $("#iniLista").innerHTML = sh.map(p => {
-    const det = [p.cliente && p.cliente !== projTitulo(p) ? p.cliente : "", iniConc(p.conc), iniFin(p.fin)].filter(Boolean).join(" · ");
+  $("#iniLista").innerHTML = `<div class="dsh-tw"><table class="dsh-tb"><thead><tr><th>Estudo</th><th>Concessionária</th><th>Criado</th><th>Alterado</th><th>Situação</th><th class="r">Ações</th></tr></thead><tbody>` + sh.map(p => {
     const fin = p.status === "finalizado", ap = INI.apagar === p.id, atual = p.id === LIB.atual;
-    return `<article class="ini-row" data-id="${p.id}">
-      <div class="ir-main">
-        <span class="ir-id">ID ${p.id}${atual ? ' <em>· aberto agora</em>' : ""}</span>
-        <h3>${esc(projTitulo(p))}</h3>
-        <p class="ir-det"><i class="dot ${fin ? "ok" : "run"}"></i>${esc(det || "Sem cliente informado")}<span class="ir-data">Alterado em ${iniData(p.alterado)}</span></p>
-      </div>
-      <div class="ir-side">
-        <span class="badge ${fin ? "ok" : "run"}">${fin ? "FINALIZADO" : "EM ANDAMENTO"}</span>
-        <div class="ir-acoes">
-          <button type="button" class="ini-link" data-acao="abrir">Abrir estudo</button>
-          <button type="button" class="ini-link" data-acao="duplicar">Duplicar</button>
-          <button type="button" class="ini-link" data-acao="status">${fin ? "Reabrir" : "Marcar como finalizado"}</button>
-          <button type="button" class="ini-link ${ap ? "perigo" : "cinza"}" data-acao="excluir">${ap ? "Confirmar exclusão" : "Excluir"}</button>
-        </div>
-      </div></article>`;
-  }).join("") + (V.length > sh.length ? `<div class="ini-mais"><button type="button" class="btn" data-acao="mais">Mostrar mais (${V.length - sh.length})</button></div>` : "");
+    const sub = [p.cliente && p.cliente !== projTitulo(p) ? p.cliente : "", iniFin(p.fin)].filter(Boolean).join(" · ");
+    return `<tr class="dsh-tr" data-id="${p.id}">
+      <td><button type="button" class="dsh-nome" data-acao="abrir">${esc(projTitulo(p))}</button>${atual ? ' <em class="dsh-ag">aberto agora</em>' : ""}<div class="dsh-sub">ID ${p.id}${sub ? " · " + esc(sub) : ""}</div></td>
+      <td>${esc(iniConc(p.conc)) || "—"}</td><td>${iniDia(p.criado)}</td><td>${iniDia(p.alterado)}</td>
+      <td><span class="dsh-st ${fin ? "ok" : "run"}">${fin ? "Finalizado" : "Em andamento"}</span></td>
+      <td class="r ac"><button type="button" class="ini-link" data-acao="abrir">Abrir</button><button type="button" class="ini-link" data-acao="duplicar">Duplicar</button><button type="button" class="ini-link" data-acao="status">${fin ? "Reabrir" : "Finalizar"}</button><button type="button" class="ini-link ${ap ? "perigo" : "cinza"}" data-acao="excluir">${ap ? "Confirmar" : "Excluir"}</button></td></tr>`;
+  }).join("") + `</tbody></table></div>` + (V.length > sh.length ? `<div class="ini-mais"><button type="button" class="btn" data-acao="mais">Mostrar mais (${V.length - sh.length})</button></div>` : "");
 }
 
 document.addEventListener("click", e => {
   if (e.target.closest("#btnNovo, #btnNovo2")) return projNovo();
   const c = e.target.closest("#tab-inicio [data-filtro]"); if (c){ INI.filtro = c.dataset.filtro === INI.filtro && INI.filtro !== "todos" ? "todos" : c.dataset.filtro; INI.mostrar = 25; return renderInicio(); }
   const a = e.target.closest("#tab-inicio [data-acao]"); if (!a) return;
-  const id = +(a.closest(".ini-row") || {}).dataset?.id, ac = a.dataset.acao;
+  const id = +((a.closest("[data-id]") || {}).dataset || {}).id, ac = a.dataset.acao;
   if (ac === "novo") return projNovo();
   if (ac === "mais"){ INI.mostrar += 25; return renderInicio(); }
-  if (ac === "abrir") return projAbrir(id);
+  if (ac === "abrir" || ac === "abrir-ult") return projAbrir(id);
   if (ac === "duplicar") return projDuplicar(id);
   if (ac === "status") return projStatus(id);
   if (ac === "excluir"){

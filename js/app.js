@@ -32,7 +32,17 @@ document.addEventListener("click", e => {
   const b = e.target.closest(".sn-parent"); if (!b) return;
   const g = b.closest(".sn-group"), ab = !g.classList.contains("open"); g.classList.toggle("open", ab); b.setAttribute("aria-expanded", String(ab));
 });
-$("#btnMenu").addEventListener("click", () => document.body.classList.toggle("sn-open"));
+/* Menu lateral: no computador o botão ☰ recolhe/mostra a barra (lembra a escolha); no celular abre como gaveta. */
+const snMovel = () => matchMedia("(max-width:900px)").matches;
+try { if (localStorage.getItem("esi.menuOculto") === "1") document.body.classList.add("sn-hide"); } catch (e) {}
+const snRotulo = () => { const b = $("#btnMenu"), oculto = document.body.classList.contains("sn-hide"), aberto = document.body.classList.contains("sn-open"), on = snMovel() ? aberto : !oculto;
+  b.setAttribute("aria-expanded", String(on)); b.setAttribute("aria-label", on ? "Ocultar menu" : "Mostrar menu"); b.title = on ? "Ocultar menu" : "Mostrar menu"; };
+$("#btnMenu").addEventListener("click", () => {
+  if (snMovel()) document.body.classList.toggle("sn-open");
+  else { const o = document.body.classList.toggle("sn-hide"); try { localStorage.setItem("esi.menuOculto", o ? "1" : "0"); } catch (e) {} }
+  snRotulo(); setTimeout(() => dispatchEvent(new Event("resize")), 60);   // o gráfico reajusta ao novo espaço
+});
+addEventListener("resize", snRotulo); snRotulo();
 $("#snBack").addEventListener("click", () => document.body.classList.remove("sn-open"));
 const abrirSobre = () => { document.body.classList.remove("sn-open"); const d = $("#dlgSobre"); if (d.showModal) d.showModal(); else d.setAttribute("open", ""); };
 $("#snSobre").addEventListener("click", abrirSobre);
